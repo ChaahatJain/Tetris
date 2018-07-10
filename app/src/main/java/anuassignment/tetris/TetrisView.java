@@ -5,6 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.os.Looper;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -37,13 +38,15 @@ public class TetrisView extends SurfaceView implements Runnable {
     // playing Board
     final static int NUMBER_OF_COL = 10;
     final static int NUMBER_OF_ROW = 20;
+    final static int squareWidth = 5;
+    final static int squareHeight = 5;
 
     int[][] board = new int[NUMBER_OF_ROW + 1][NUMBER_OF_COL]; // board is defined row-wise; i.e for every row you need to check 10 columns
     // 1 extra row for the entire bottom no need to draw this row.
 
     public TetrisView(Context context, int x, int y) {
         super(context);
-
+        System.out.println("Initialisation started");
         this.context = context;
         screenWidth = x;
         screenHeight = y;
@@ -67,13 +70,18 @@ public class TetrisView extends SurfaceView implements Runnable {
         }
         gameOver = false;
 
+        System.out.println("Initialisation Over");
     }
 
     @Override
     public void run() {
         // when in playing state - update, draw, control the thread
+        System.out.println("In run");
         while (playing) {
+            System.out.println("Entering update");
             update();
+            System.out.println("Exiting update and entering draw");
+
             draw();
             control();
         }
@@ -110,19 +118,22 @@ public class TetrisView extends SurfaceView implements Runnable {
 
             canvas.drawColor(Color.argb(255, 0, 0, 0)); // make the entire previous canvas black
             paint.setColor(Color.argb(255, 255, 255, 255)); // paint is white
-
             if (gameOver) canvas.drawText("Game is Over", screenWidth / 2, screenHeight / 2, paint);
             else {
                 for (int i = 0; i < NUMBER_OF_ROW; i++) {
+                    canvas.drawLine(0,i * squareHeight, NUMBER_OF_COL*squareWidth, i * squareHeight, paint);
                     for (int j = 0; j < NUMBER_OF_COL; j++) {
+                        canvas.drawLine(0,j * squareWidth, NUMBER_OF_ROW*squareHeight, j * squareWidth, paint);
                         if (board[i][j] == 1) {
-                            Rect rect = new Rect(i, j, i + screenWidth, j + screenHeight); // size of the square to be made. Currently superSuspicious.
+                            Rect rect = new Rect(i, j, i + squareWidth, j + squareHeight); // size of the square to be made. Currently superSuspicious.
                             canvas.drawRect(rect, paint);
                         }
                     }
                 }
                 // draw the currentPiece
-                canvas = currentPiece.drawPiece(canvas, paint, screenWidth, screenHeight);
+                System.out.println("Checking drawPiece");
+                canvas = currentPiece.drawPiece(canvas, paint, squareWidth, squareHeight);
+                System.out.println("Culprit");
             }
         }
         ourHolder.unlockCanvasAndPost(canvas);
