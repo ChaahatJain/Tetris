@@ -5,7 +5,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.os.Looper;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -135,8 +134,9 @@ public class TetrisView extends SurfaceView implements Runnable {
                 canvas = currentPiece.drawPiece(canvas, paint, squareWidth, squareHeight);
                 System.out.println("Culprit");
             }
+            ourHolder.unlockCanvasAndPost(canvas);
         }
-        ourHolder.unlockCanvasAndPost(canvas);
+
     }
 
     private void control() {
