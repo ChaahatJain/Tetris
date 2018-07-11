@@ -5,6 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -50,6 +51,7 @@ public class TetrisView extends SurfaceView implements Runnable {
     final static int squareHeight = 65;
     final static int squareStrokeWidth = 5;
     static int board_x, board_y;
+    static int queue_x, queue_y;
 
     int[][] board = new int[NUMBER_OF_ROW + 1][NUMBER_OF_COL]; // board is defined row-wise; i.e for every row you need to check 10 columns
     char[][] typeBoard = new char[NUMBER_OF_ROW][NUMBER_OF_COL];
@@ -63,6 +65,9 @@ public class TetrisView extends SurfaceView implements Runnable {
 
         board_x = screenWidth / 3;
         board_y = squareHeight;
+
+        queue_x = board_x + NUMBER_OF_COL * squareWidth + 20 + 10 * squareStrokeWidth;
+        queue_y = board_y + 5 * squareHeight;
 
         ourHolder = getHolder();
         fillPaint = new Paint();
@@ -79,7 +84,7 @@ public class TetrisView extends SurfaceView implements Runnable {
 
         for (int i = 0; i < 20; i++) {
             board[i] = new int[NUMBER_OF_COL];
-            typeBoard[i] = new char[NUMBER_OF_COL] ;
+            typeBoard[i] = new char[NUMBER_OF_COL];
         }
         // initialising the last row
         for (int i = 0; i < 10; i++) {
@@ -121,8 +126,7 @@ public class TetrisView extends SurfaceView implements Runnable {
             queuePieces--;
 
             if (queuePieces == 0) initialiseQueue();
-        }
-        else {
+        } else {
             currentPiece.setPositionY(currentPiece.getPositionY() + 1);
         }
     }
@@ -134,8 +138,9 @@ public class TetrisView extends SurfaceView implements Runnable {
             canvas.drawColor(Color.GRAY);
             canvas = drawMatrix(canvas); // draw an empty matrix
             canvas = Draw.fillSquares(canvas, board, typeBoard); // Used to color the squares appropriately
-            drawPiece();
+            drawCurrentPiece();
             canvas = drawQueue(canvas); // draw an empty queue
+            drawQueuePieces(queue);
             canvas = drawNextPieceHolder(canvas); // draw an empty nextPieceHolder
             canvas = drawHoldPieceHolder(canvas); // draw an empty pieceHolder
             ourHolder.unlockCanvasAndPost(canvas);
@@ -170,6 +175,7 @@ public class TetrisView extends SurfaceView implements Runnable {
 
     /**
      * Used to check whether there is a square below the given piece or not
+     *
      * @return
      */
     private boolean checkPiece() {
@@ -205,6 +211,7 @@ public class TetrisView extends SurfaceView implements Runnable {
 
     /**
      * Check whether any row has been filled or not. If it has then remove the row
+     *
      * @return the number of rows that have been removed like this
      */
     private int clearRows() {
@@ -220,6 +227,7 @@ public class TetrisView extends SurfaceView implements Runnable {
 
     /**
      * Check whther given row is full or not
+     *
      * @param y
      * @return
      */
@@ -232,6 +240,7 @@ public class TetrisView extends SurfaceView implements Runnable {
 
     /**
      * clear a line from both grids
+     *
      * @param y : Row index to be removed
      */
     private void clearLine(int y) {
@@ -251,7 +260,7 @@ public class TetrisView extends SurfaceView implements Runnable {
     /**
      * Draw the current piece onto the canvas
      */
-    private void drawPiece() {
+    private void drawCurrentPiece() {
         Square[] squares = currentPiece.getSquares();
         int positionX = currentPiece.getPositionX();
         int positionY = currentPiece.getPositionY();
@@ -274,6 +283,16 @@ public class TetrisView extends SurfaceView implements Runnable {
 
     }
 
+    private void drawQueuePieces(Piece[] queue) {
+        int pieceNumber = 0;
+        for (int i = queue.length - queuePieces + 1; i < queue.length; i++) {
+            Piece piece = queue[i];
+            int x = queue_x + squareWidth;
+            int y = queue_y + (pieceNumber + 4) * squareHeight;
+            canvas = piece.drawPiece(canvas, x, y);
+            pieceNumber++;
+        }
+    }
 
 
 }

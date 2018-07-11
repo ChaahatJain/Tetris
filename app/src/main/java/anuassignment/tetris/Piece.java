@@ -1,6 +1,9 @@
 package anuassignment.tetris;
 
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Rect;
 
 import java.util.Random;
 
@@ -15,8 +18,8 @@ public class Piece {
     private int color;
     private char type;
 
-    final static int PIECE_AREA = 4;
-    final static String PIECE_TYPES = "LIOJSZT";
+    private final static int PIECE_AREA = 4;
+    private final static String PIECE_TYPES = "LIOJSZT";
 
     public Piece(int positionX, int positionY, char type) {
         this.positionX = positionX;
@@ -38,9 +41,9 @@ public class Piece {
         array[0] = new Square(0, 0);
         switch (type) {
             case 'I':
-                array[1] = new Square(1, 0);
-                array[2] = new Square(2, 0);
-                array[3] = new Square(3, 0);
+                array[1] = new Square(-1, 0);
+                array[2] = new Square(1, 0);
+                array[3] = new Square(2, 0);
                 break;
             case 'J':
                 array[1] = new Square(-1, 0);
@@ -139,8 +142,8 @@ public class Piece {
         int index = random.nextInt(PIECE_TYPES.length());
         char type = PIECE_TYPES.charAt(index);
 
-        Piece currentPiece = new Piece(5, 0, type);
-        return currentPiece;
+        Piece piece = new Piece(5, 0, type);
+        return piece;
     }
 
 
@@ -169,5 +172,38 @@ public class Piece {
             default:
                 return Color.WHITE;
         }
+    }
+
+    /**
+     *
+     * @param canvas
+     * @param startX
+     * @param startY
+     * @return
+     */
+    public Canvas drawPiece(Canvas canvas, int startX, int startY) {
+        for (Square square : squares) {
+            int x = startX + (square.getX()*square.SQUARE_WIDTH);
+            int y = startY + (square.getY()*square.SQUARE_HEIGHT);
+            int endX = x + square.SQUARE_WIDTH;
+            int endY = y + square.SQUARE_HEIGHT;
+            Rect rect = new Rect(x,y,endX,endY);
+            Paint paint = new Paint();
+            paint.setColor(chooseColor(type));
+            Paint strokePaint = new Paint();
+            strokePaint.setStyle(Paint.Style.STROKE);
+            strokePaint.setColor(Color.BLACK);
+            canvas.drawRect(rect,paint);
+            canvas.drawRect(rect,strokePaint);
+        }
+        return canvas;
+    }
+
+    // solely for debugging. Remember to delete afterwards
+    public void print() {
+        for (Square square : squares) {
+            System.out.print("(" + square.getX() + " , " + square.getY() + ") ");
+        }
+        System.out.println();
     }
 }

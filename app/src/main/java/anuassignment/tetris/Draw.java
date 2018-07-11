@@ -10,6 +10,8 @@ import static anuassignment.tetris.TetrisView.NUMBER_OF_ROW;
 import static anuassignment.tetris.TetrisView.board_x;
 import static anuassignment.tetris.TetrisView.board_y;
 import static anuassignment.tetris.TetrisView.fillPaint;
+import static anuassignment.tetris.TetrisView.queue_x;
+import static anuassignment.tetris.TetrisView.queue_y;
 import static anuassignment.tetris.TetrisView.squareHeight;
 import static anuassignment.tetris.TetrisView.squareStrokeWidth;
 import static anuassignment.tetris.TetrisView.squareWidth;
@@ -54,8 +56,8 @@ public class Draw {
      * @return
      */
     public static Canvas drawQueue(Canvas canvas) {
-        int startX = board_x + NUMBER_OF_COL * squareWidth + 20 + 10 * squareStrokeWidth;
-        int startY = board_y + 5 * squareHeight;
+        int startX = queue_x;
+        int startY = queue_y;
         int endX = startX + 4 * (squareWidth + squareStrokeWidth);
         int endY = startY + 15 * squareHeight;
         fillPaint.setColor(Color.WHITE);
