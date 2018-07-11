@@ -1,10 +1,5 @@
 package anuassignment.tetris;
-
-import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.Rect;
-
 import java.util.Random;
 
 /**
@@ -15,6 +10,7 @@ public class Piece {
     private Square[] squares;
     private int positionX;
     private int positionY;
+    private int color;
     char type;
 
     final static int PIECE_AREA = 4;
@@ -25,6 +21,7 @@ public class Piece {
         this.positionY = positionY;
         this.type = type;
         squares = getAllSquares(type);
+        color = chooseColor(type);
     }
 
     public Piece(Square[] squares, int positionX, int positionY, char type) {
@@ -41,15 +38,15 @@ public class Piece {
             case 'I':
                 array[1] = new Square(1, 0);
                 array[2] = new Square(2, 0);
-                array[3] = new Square(4, 0);
+                array[3] = new Square(3, 0);
                 break;
             case 'J':
                 array[1] = new Square(-1, 0);
                 array[2] = new Square(-2, 0);
-                array[3] = new Square(0, 1);
+                array[3] = new Square(0, -1);
                 break;
             case 'L':
-                array[1] = new Square(0, 1);
+                array[1] = new Square(0, -1);
                 array[2] = new Square(1, 0);
                 array[3] = new Square(2, 0);
                 break;
@@ -60,13 +57,13 @@ public class Piece {
                 break;
             case 'S':
                 array[1] = new Square(1, 0);
-                array[2] = new Square(0, -1);
-                array[3] = new Square(-1, -1);
+                array[2] = new Square(0, 1);
+                array[3] = new Square(-1, 1);
                 break;
             case 'Z':
                 array[1] = new Square(-1, 0);
-                array[2] = new Square(0, -1);
-                array[3] = new Square(1, -1);
+                array[2] = new Square(0, 1);
+                array[3] = new Square(1, 1);
                 break;
             case 'T':
                 array[1] = new Square(1, 0);
@@ -82,7 +79,22 @@ public class Piece {
      *
      * @return
      */
-    public Piece rotatePiece() {
+    public Piece rotatePieceClockWise() {
+        Square[] array = new Square[4];
+        for (int i = 0; i < 4; i++) {
+            int x = -1 * squares[i].getY();
+            int y = squares[i].getX();
+            array[i] = new Square(x, y);
+        }
+        Piece piece = new Piece(array, this.positionX, this.positionY, this.type);
+        return piece;
+    }
+
+    /**
+     * Algorithm to return the piece anticlockwise
+     * @return
+     */
+    public Piece rotatePieceAntiClockWise() {
         Square[] array = new Square[4];
         for (int i = 0; i < 4; i++) {
             int x = squares[i].getY();
@@ -92,6 +104,8 @@ public class Piece {
         Piece piece = new Piece(array, this.positionX, this.positionY, this.type);
         return piece;
     }
+
+    // Need a drawPiece and a drawSquare Method
 
     public int getPositionX() {
         return positionX;
@@ -113,24 +127,7 @@ public class Piece {
         return squares;
     }
 
-    /**
-     * Checks whether there is a piece beneath any of the squares
-     *
-     * @param board
-     * @return
-     */
-     boolean fixPiece(int[][] board) {
-        for (int i = 0; i < squares.length; i++) {
-            Square square = squares[i];
-            int squareX = square.getX() + positionX; // column number
-            int squareY = square.getY() + positionY; // row number
 
-            if (board[squareY + 1][squareX] == 1) {
-                return true;
-            }
-        }
-        return false;
-    }
 
      static Piece generatePiece() {
         Random random = new Random();
@@ -141,20 +138,23 @@ public class Piece {
         return currentPiece;
     }
 
+
+
     /**
-     * Paints all squares of the piece onto the canvas
-     * TO_DO : Change it so that for different types of Blocks it takes in different color's
-     * @param canvas
-     * @param paint
-     * @param squareWidth
-     * @param squareHeight
+     * Decide on a color for each and every piece
+     * @param type
      * @return
      */
-    Canvas drawPiece(Canvas canvas,Paint paint, int squareWidth, int squareHeight) {
-         for (int i = 0; i < squares.length; i++) {
-             Rect rect = new Rect(positionX, positionY, positionX + squareWidth, positionY + squareHeight);
-             canvas.drawRect(rect, paint);
-         }
-         return canvas;
+    private int chooseColor(char type) {
+        switch (type) {
+            case 'O' : return Color.YELLOW;
+            case 'I' : return Color.argb(255, 51, 204, 255);
+            case 'J' : return Color.argb(255, 255, 153, 0);
+            case 'L' : return Color.argb(255, 51, 51, 255);
+            case 'T' : return Color.argb(255, 0, 0, 153);
+            case 'S' : return Color.argb(255, 0, 230, 0);
+            case 'Z' : return Color.argb(255, 255, 0, 0);
+            default: return Color.WHITE;
+        }
     }
 }

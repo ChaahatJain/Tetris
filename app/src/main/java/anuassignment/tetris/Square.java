@@ -20,4 +20,5 @@ class Square {
     public int getY() {
         return y;
     }
+
 }

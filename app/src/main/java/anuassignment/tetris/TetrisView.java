@@ -8,6 +8,11 @@ import android.graphics.Rect;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+import static anuassignment.tetris.Draw.drawHoldPieceHolder;
+import static anuassignment.tetris.Draw.drawMatrix;
+import static anuassignment.tetris.Draw.drawNextPieceHolder;
+import static anuassignment.tetris.Draw.drawQueue;
+
 
 /**
  * Created by chaahatjain on 10/7/18.
@@ -25,7 +30,8 @@ public class TetrisView extends SurfaceView implements Runnable {
     // artwork
     private SurfaceHolder ourHolder;
     Canvas canvas;
-    Paint paint;
+    public static Paint fillPaint;
+    public static Paint strokePaint;
 
     Thread gameThread = null;
     private long time = 17;
@@ -37,21 +43,27 @@ public class TetrisView extends SurfaceView implements Runnable {
     // playing Board
     final static int NUMBER_OF_COL = 10;
     final static int NUMBER_OF_ROW = 20;
-    final static int squareWidth = 5;
-    final static int squareHeight = 5;
+    final static int squareWidth = 65;
+    final static int squareHeight = 65;
+    final static int squareStrokeWidth = 5;
+    static int board_x, board_y;
 
     int[][] board = new int[NUMBER_OF_ROW + 1][NUMBER_OF_COL]; // board is defined row-wise; i.e for every row you need to check 10 columns
+    char[][] typeBoard = new char[NUMBER_OF_ROW][NUMBER_OF_COL];
     // 1 extra row for the entire bottom no need to draw this row.
 
     public TetrisView(Context context, int x, int y) {
         super(context);
-        System.out.println("Initialisation started");
         this.context = context;
         screenWidth = x;
         screenHeight = y;
 
+        board_x = screenWidth / 3;
+        board_y = squareHeight;
+
         ourHolder = getHolder();
-        paint = new Paint();
+        fillPaint = new Paint();
+        strokePaint = new Paint();
         startGame();
     }
 
@@ -61,7 +73,8 @@ public class TetrisView extends SurfaceView implements Runnable {
         currentPiece = Piece.generatePiece();
 
         for (int i = 0; i < 20; i++) {
-            board[i] = new int[10];
+            board[i] = new int[NUMBER_OF_COL];
+            typeBoard[i] = new char[NUMBER_OF_COL] ;
         }
         // initialising the last row
         for (int i = 0; i < 10; i++) {
@@ -69,71 +82,30 @@ public class TetrisView extends SurfaceView implements Runnable {
         }
         gameOver = false;
 
-        System.out.println("Initialisation Over");
     }
 
     @Override
     public void run() {
         // when in playing state - update, draw, control the thread
-        System.out.println("In run");
         while (playing) {
-            System.out.println("Entering update");
             update();
-            System.out.println("Exiting update and entering draw");
-
             draw();
             control();
         }
     }
 
     private void update() {
-
-        // if touching ground, or any other block;
-        // add the entire piece to the board
-        if (currentPiece.fixPiece(board)) {
-
-            // attach the currentPiece to the board
-            // then check whether the row is entirely full or not and update accordingly
-            attachPieceToBoard(currentPiece, board);
-
-            if (!gameOver) {
-                // generate a new Piece
-                currentPiece = Piece.generatePiece();
-            }
-
-        }
-        // update the yCoord of this piece
-        else {
-
-            int y = currentPiece.getPositionY();
-            currentPiece.setPositionY(++y);
-        }
     }
 
     private void draw() {
         if (ourHolder.getSurface().isValid()) {
             // lock the canvas
             canvas = ourHolder.lockCanvas();
-
-            canvas.drawColor(Color.argb(255, 0, 0, 0)); // make the entire previous canvas black
-            paint.setColor(Color.argb(255, 255, 255, 255)); // paint is white
-            if (gameOver) canvas.drawText("Game is Over", screenWidth / 2, screenHeight / 2, paint);
-            else {
-                for (int i = 0; i < NUMBER_OF_ROW; i++) {
-                    canvas.drawLine(0,i * squareHeight, NUMBER_OF_COL*squareWidth, i * squareHeight, paint);
-                    for (int j = 0; j < NUMBER_OF_COL; j++) {
-                        canvas.drawLine(0,j * squareWidth, NUMBER_OF_ROW*squareHeight, j * squareWidth, paint);
-                        if (board[i][j] == 1) {
-                            Rect rect = new Rect(i, j, i + squareWidth, j + squareHeight); // size of the square to be made. Currently superSuspicious.
-                            canvas.drawRect(rect, paint);
-                        }
-                    }
-                }
-                // draw the currentPiece
-                System.out.println("Checking drawPiece");
-                canvas = currentPiece.drawPiece(canvas, paint, squareWidth, squareHeight);
-                System.out.println("Culprit");
-            }
+            canvas.drawColor(Color.GRAY);
+            canvas = drawMatrix(canvas);
+            canvas = drawQueue(canvas);
+            canvas = drawNextPieceHolder(canvas);
+            canvas = drawHoldPieceHolder(canvas);
             ourHolder.unlockCanvasAndPost(canvas);
         }
 
@@ -142,8 +114,7 @@ public class TetrisView extends SurfaceView implements Runnable {
     private void control() {
         try {
             gameThread.sleep(time);
-        }
-        catch (InterruptedException e) {
+        } catch (InterruptedException e) {
 
         }
     }
@@ -165,42 +136,7 @@ public class TetrisView extends SurfaceView implements Runnable {
         gameThread.start();
     }
 
-    /**
-     * attach the currentPiece to the board if it cannot move
-     *
-     * @param piece
-     * @param board
-     */
-    private void attachPieceToBoard(Piece piece, int[][] board) {
-        Square[] squares = piece.getSquares();
-        for (int i = 0; i < squares.length; i++) {
-            Square square = squares[i];
-            int squareX = square.getX() + piece.getPositionX();
-            int squareY = square.getY() + piece.getPositionY();
-            if (board[squareY][squareX] == 1) gameOver = true;
-            else {
-                board[squareY][squareX] = 1;
-                if (fullRow(board, squareY)) {
-                    board[squareY] = new int[NUMBER_OF_COL];
-                }
-            }
-        }
-    }
 
-    /**
-     * checks whether the entire row is full or not
-     * @param board
-     * @param rowNumber
-     * @return
-     */
-    private boolean fullRow(int[][] board, int rowNumber) {
 
-        for (int i = 0; i < NUMBER_OF_COL; i++) {
-            if (board[rowNumber][i] != 1) {
-                return false;
-            }
-        }
-        return true;
-    }
 
 }
