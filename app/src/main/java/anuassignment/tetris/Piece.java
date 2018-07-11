@@ -1,5 +1,7 @@
 package anuassignment.tetris;
+
 import android.graphics.Color;
+
 import java.util.Random;
 
 /**
@@ -11,7 +13,7 @@ public class Piece {
     private int positionX;
     private int positionY;
     private int color;
-    char type;
+    private char type;
 
     final static int PIECE_AREA = 4;
     final static String PIECE_TYPES = "LIOJSZT";
@@ -92,6 +94,7 @@ public class Piece {
 
     /**
      * Algorithm to return the piece anticlockwise
+     *
      * @return
      */
     public Piece rotatePieceAntiClockWise() {
@@ -127,9 +130,11 @@ public class Piece {
         return squares;
     }
 
+    public char getType() {
+        return type;
+    }
 
-
-     static Piece generatePiece() {
+    static Piece generatePiece() {
         Random random = new Random();
         int index = random.nextInt(PIECE_TYPES.length());
         char type = PIECE_TYPES.charAt(index);
@@ -139,22 +144,30 @@ public class Piece {
     }
 
 
-
     /**
      * Decide on a color for each and every piece
+     *
      * @param type
      * @return
      */
-    private int chooseColor(char type) {
+    public static int chooseColor(char type) {
         switch (type) {
-            case 'O' : return Color.YELLOW;
-            case 'I' : return Color.argb(255, 51, 204, 255);
-            case 'J' : return Color.argb(255, 255, 153, 0);
-            case 'L' : return Color.argb(255, 51, 51, 255);
-            case 'T' : return Color.argb(255, 0, 0, 153);
-            case 'S' : return Color.argb(255, 0, 230, 0);
-            case 'Z' : return Color.argb(255, 255, 0, 0);
-            default: return Color.WHITE;
+            case 'O':
+                return Color.YELLOW;
+            case 'I':
+                return Color.argb(255, 51, 204, 255);
+            case 'J':
+                return Color.argb(255, 255, 153, 0);
+            case 'L':
+                return Color.argb(255, 51, 51, 255);
+            case 'T':
+                return Color.argb(255, 0, 0, 153);
+            case 'S':
+                return Color.argb(255, 0, 230, 0);
+            case 'Z':
+                return Color.argb(255, 255, 0, 0);
+            default:
+                return Color.WHITE;
         }
     }
 }

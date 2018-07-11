@@ -93,4 +93,35 @@ public class Draw {
         canvas.drawCircle(center_x, center_y, radius, strokePaint);
         return canvas;
     }
+
+    /**
+     * Used to fill the squares for the entire board
+     * @param canvas
+     * @param board
+     * @param typeBoard
+     * @return
+     */
+    public static Canvas fillSquares(Canvas canvas, int[][] board, char[][] typeBoard) {
+        Paint paint = new Paint();
+        Paint strokePaint = new Paint();
+        strokePaint.setStyle(Paint.Style.STROKE);
+        strokePaint.setColor(Color.BLACK);
+        strokePaint.setStrokeWidth(squareStrokeWidth);
+        for (int i = 0; i < NUMBER_OF_ROW; i++) {
+            for (int j = 0; j < NUMBER_OF_COL; j++) {
+                if (board[i][j] == 1) {
+                    int x = board_x + j*squareWidth;
+                    int y = board_y + i*squareHeight;
+                    int endX = x + squareWidth;
+                    int endY = y + squareHeight;
+                    Rect rect = new Rect(x, y, endX, endY);
+                    char type = typeBoard[i][j];
+                    paint.setColor(Piece.chooseColor(type));
+                    canvas.drawRect(rect,paint);
+                    canvas.drawRect(rect,strokePaint);
+                }
+            }
+        }
+        return canvas;
+    }
 }

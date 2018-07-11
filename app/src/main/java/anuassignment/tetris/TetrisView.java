@@ -38,8 +38,11 @@ public class TetrisView extends SurfaceView implements Runnable {
 
     // currentPiece controlled by the player
     Piece currentPiece;
+    Piece heldPiece;
+    Piece[] queue;
     boolean gameOver;
 
+    int queuePieces;
     // playing Board
     final static int NUMBER_OF_COL = 10;
     final static int NUMBER_OF_ROW = 20;
@@ -64,6 +67,8 @@ public class TetrisView extends SurfaceView implements Runnable {
         ourHolder = getHolder();
         fillPaint = new Paint();
         strokePaint = new Paint();
+        queue = new Piece[7];
+        queuePieces = 7;
         startGame();
     }
 
@@ -81,7 +86,24 @@ public class TetrisView extends SurfaceView implements Runnable {
             board[20][i] = 1;
         }
         gameOver = false;
+        heldPiece = null;
+        initialiseQueue();
+    }
 
+    /**
+     * Used to initialise the queue for the game
+     */
+    private void initialiseQueue() {
+        for (int i = 0; i < queue.length; i++) {
+            queue[i] = Piece.generatePiece();
+        }
+        queuePieces = queue.length;
+    }
+
+    private void updateQueue() {
+        for (int i = 0; i < queue.length; i++) {
+            queue[i] = i != queue.length - 1 ? queue[i + 1] : null;
+        }
     }
 
     @Override
@@ -95,6 +117,22 @@ public class TetrisView extends SurfaceView implements Runnable {
     }
 
     private void update() {
+
+        if (checkPiece()) { // check whether piece is going to be fixed or not
+            System.out.println("In check Piece");
+            updateBoard(); // if yes, update the board
+
+            int numberOfRowsCleared = clearRows(); // used for scoring
+
+            currentPiece = queue[queue.length - queuePieces]; // Get the next piece out
+            queuePieces--;
+            updateQueue();
+
+            if (queuePieces == 0) initialiseQueue();
+        }
+        else {
+            currentPiece.setPositionY(currentPiece.getPositionY() + 1);
+        }
     }
 
     private void draw() {
@@ -102,10 +140,12 @@ public class TetrisView extends SurfaceView implements Runnable {
             // lock the canvas
             canvas = ourHolder.lockCanvas();
             canvas.drawColor(Color.GRAY);
-            canvas = drawMatrix(canvas);
-            canvas = drawQueue(canvas);
-            canvas = drawNextPieceHolder(canvas);
-            canvas = drawHoldPieceHolder(canvas);
+            canvas = drawMatrix(canvas); // draw an empty matrix
+            canvas = Draw.fillSquares(canvas, board, typeBoard); // Used to color the squares appropriately
+            drawPiece();
+            canvas = drawQueue(canvas); // draw an empty queue
+            canvas = drawNextPieceHolder(canvas); // draw an empty nextPieceHolder
+            canvas = drawHoldPieceHolder(canvas); // draw an empty pieceHolder
             ourHolder.unlockCanvasAndPost(canvas);
         }
 
@@ -113,7 +153,7 @@ public class TetrisView extends SurfaceView implements Runnable {
 
     private void control() {
         try {
-            gameThread.sleep(time);
+            gameThread.sleep(40);
         } catch (InterruptedException e) {
 
         }
@@ -136,6 +176,111 @@ public class TetrisView extends SurfaceView implements Runnable {
         gameThread.start();
     }
 
+    /**
+     * Used to check whether there is a square below the given piece or not
+     * @return
+     */
+    private boolean checkPiece() {
+        int indexX = currentPiece.getPositionX();
+        int indexY = currentPiece.getPositionY();
+        Square[] squares = currentPiece.getSquares();
+        for (int i = 0; i < 4; i++) {
+            Square square = squares[i];
+            int x = square.getX() + indexX;
+            int y = square.getY() + indexY;
+            if (board[y + 1][x] == 1) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Update the details of a board when a piece falls on it
+     */
+    private void updateBoard() {
+        int indexX = currentPiece.getPositionX();
+        int indexY = currentPiece.getPositionY();
+        Square[] squares = currentPiece.getSquares();
+        for (Square square : squares) {
+            int x = square.getX() + indexX;
+            int y = square.getY() + indexY;
+            board[y][x] = 1;
+            typeBoard[y][x] = currentPiece.getType();
+        }
+
+    }
+
+    /**
+     * Check whether any row has been filled or not. If it has then remove the row
+     * @return the number of rows that have been removed like this
+     */
+    private int clearRows() {
+        int numberRemoved = 0;
+        for (int i = 0; i < NUMBER_OF_ROW; i++) {
+            if (lineClear(i - numberRemoved)) {
+                clearLine(i - numberRemoved);
+                numberRemoved++;
+            }
+        }
+        return numberRemoved;
+    }
+
+    /**
+     * Check whther given row is full or not
+     * @param y
+     * @return
+     */
+    private boolean lineClear(int y) {
+        for (int i = 0; i < NUMBER_OF_COL; i++) {
+            if (board[y][i] != 1) return false;
+        }
+        return true;
+    }
+
+    /**
+     * clear a line from both grids
+     * @param y : Row index to be removed
+     */
+    private void clearLine(int y) {
+        int subtract = 0;
+        for (int i = NUMBER_OF_ROW; i > 0; i--) {
+            if (i == y) {
+                subtract = 1;
+            }
+            board[i] = board[i - subtract];
+            typeBoard[i] = typeBoard[i - subtract];
+        }
+
+        board[0] = new int[NUMBER_OF_COL];
+        typeBoard[0] = new char[NUMBER_OF_COL];
+    }
+
+    /**
+     * Draw the current piece onto the canvas
+     */
+    private void drawPiece() {
+        System.out.println("Current Piece Type : " + (currentPiece == null));
+        Square[] squares = currentPiece.getSquares();
+        int positionX = currentPiece.getPositionX();
+        int positionY = currentPiece.getPositionY();
+        char type = currentPiece.getType();
+        Paint paint = new Paint();
+        paint.setColor(Piece.chooseColor(type));
+        Paint strokePaint = new Paint();
+        strokePaint.setStyle(Paint.Style.STROKE);
+        strokePaint.setColor(Color.BLACK);
+        strokePaint.setStrokeWidth(squareStrokeWidth);
+        for (int i = 0; i < squares.length; i++) {
+            int x = board_x + (positionX + squares[i].getX())*squareWidth;
+            int y = board_y + (positionY + squares[i].getY())*squareHeight;
+            int endX = x + squareWidth;
+            int endY = y + squareHeight;
+            Rect rect = new Rect(x,y,endX,endY);
+            canvas.drawRect(rect,paint);
+            canvas.drawRect(rect,strokePaint);
+        }
+    }
 
 
 
