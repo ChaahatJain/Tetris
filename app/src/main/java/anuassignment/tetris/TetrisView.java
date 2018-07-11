@@ -100,12 +100,6 @@ public class TetrisView extends SurfaceView implements Runnable {
         queuePieces = queue.length;
     }
 
-    private void updateQueue() {
-        for (int i = 0; i < queue.length; i++) {
-            queue[i] = i != queue.length - 1 ? queue[i + 1] : null;
-        }
-    }
-
     @Override
     public void run() {
         // when in playing state - update, draw, control the thread
@@ -119,14 +113,12 @@ public class TetrisView extends SurfaceView implements Runnable {
     private void update() {
 
         if (checkPiece()) { // check whether piece is going to be fixed or not
-            System.out.println("In check Piece");
             updateBoard(); // if yes, update the board
 
             int numberOfRowsCleared = clearRows(); // used for scoring
 
             currentPiece = queue[queue.length - queuePieces]; // Get the next piece out
             queuePieces--;
-            updateQueue();
 
             if (queuePieces == 0) initialiseQueue();
         }
@@ -153,7 +145,7 @@ public class TetrisView extends SurfaceView implements Runnable {
 
     private void control() {
         try {
-            gameThread.sleep(40);
+            gameThread.sleep(100);
         } catch (InterruptedException e) {
 
         }
@@ -260,7 +252,6 @@ public class TetrisView extends SurfaceView implements Runnable {
      * Draw the current piece onto the canvas
      */
     private void drawPiece() {
-        System.out.println("Current Piece Type : " + (currentPiece == null));
         Square[] squares = currentPiece.getSquares();
         int positionX = currentPiece.getPositionX();
         int positionY = currentPiece.getPositionY();
@@ -272,14 +263,15 @@ public class TetrisView extends SurfaceView implements Runnable {
         strokePaint.setColor(Color.BLACK);
         strokePaint.setStrokeWidth(squareStrokeWidth);
         for (int i = 0; i < squares.length; i++) {
-            int x = board_x + (positionX + squares[i].getX())*squareWidth;
-            int y = board_y + (positionY + squares[i].getY())*squareHeight;
+            int x = board_x + (positionX + squares[i].getX()) * squareWidth;
+            int y = board_y + (positionY + squares[i].getY()) * squareHeight;
             int endX = x + squareWidth;
             int endY = y + squareHeight;
-            Rect rect = new Rect(x,y,endX,endY);
-            canvas.drawRect(rect,paint);
-            canvas.drawRect(rect,strokePaint);
+            Rect rect = new Rect(x, y, endX, endY);
+            canvas.drawRect(rect, paint);
+            canvas.drawRect(rect, strokePaint);
         }
+
     }
 
 
