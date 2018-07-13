@@ -4,8 +4,13 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Rect;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import static anuassignment.tetris.Draw.drawHoldPieceHolder;
 import static anuassignment.tetris.Draw.drawMatrix;
@@ -143,6 +148,7 @@ public class TetrisView extends SurfaceView implements Runnable {
             drawQueueTetrimino();
             canvas = drawNextPieceHolder(canvas); // draw an empty nextPieceHolder
             drawNextTetrimino();
+            drawGhostPiece();
             canvas = drawHoldPieceHolder(canvas); // draw an empty pieceHolder
             ourHolder.unlockCanvasAndPost(canvas);
         }
@@ -276,7 +282,7 @@ public class TetrisView extends SurfaceView implements Runnable {
         int pieceNumber = 0;
         for (int i = nextTetriminos.length - tetriminosInQueue + 1; i < nextTetriminos.length; i++) {
             Tetrimino tetrimino = nextTetriminos[i];
-            int x = queue_x + 2*squareWidth;
+            int x = queue_x + 2 * squareWidth;
             int y = queue_y + (3 * pieceNumber + 1) * squareHeight + 30;
             canvas = tetrimino.drawTetrimino(canvas, x, y);
             pieceNumber++;
@@ -287,8 +293,58 @@ public class TetrisView extends SurfaceView implements Runnable {
         int center_x = queue_x + 2 * squareWidth - 10 + 5 * squareStrokeWidth;
         int center_y = queue_y - 3 * squareHeight;
         Tetrimino next = nextTetriminos[nextTetriminos.length - tetriminosInQueue];
-        canvas = next.drawTetrimino(canvas,center_x,center_y);
+        canvas = next.drawTetrimino(canvas, center_x, center_y);
 
+    }
+
+    private void drawGhostPiece() {
+        Tetrimino.Tuple[] tuples = currentTetrimino.getSquares();
+        int col = currentTetrimino.getCenterCol();
+        int row = currentTetrimino.getCenterRow();
+
+        Paint paint = new Paint();
+        paint.setColor(Color.LTGRAY);
+
+
+        int leastRow = NUMBER_OF_ROW + 2;
+        Tetrimino.Tuple relative = null;
+
+        for (Tetrimino.Tuple tuple : tuples) {
+            int x = col + tuple.x;
+            int y = row + tuple.y;
+            int lowestRow = getLowestAvailableRow(x, y);
+            if (leastRow >= lowestRow) {
+                leastRow = lowestRow;
+                relative = tuple;
+            }
+        }
+
+        for (Tetrimino.Tuple tuple : tuples) {
+            int x = col + tuple.x;
+            int y = leastRow + (tuple.y - relative.y);
+
+            int left = board_x + x * squareWidth;
+            int top = board_y + y * squareHeight;
+            int right = left + squareWidth;
+            int bottom = top + squareHeight;
+            Rect rect = new Rect(left,top,right,bottom);
+
+            canvas.drawRect(rect,paint);
+
+
+        }
+
+
+    }
+
+    private int getLowestAvailableRow(int col, int row) {
+        int max = 0;
+        for (int i = row + 1; i <= NUMBER_OF_ROW; i++) {
+            if (board[i][col] == 1) {
+                return i - 1;
+            }
+        }
+        return max;
     }
 
 
