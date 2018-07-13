@@ -40,7 +40,6 @@ public class TetrisView extends SurfaceView implements Runnable {
     Tetrimino currentTetrimino;
     Tetrimino[] nextTetriminos;
     int tetriminosInQueue;
-    Piece heldPiece;
     boolean gameOver;
 
     // playing Board
@@ -65,7 +64,7 @@ public class TetrisView extends SurfaceView implements Runnable {
         board_x = screenWidth / 3;
         board_y = squareHeight;
 
-        queue_x = board_x + NUMBER_OF_COL * squareWidth + 20 + 10 * squareStrokeWidth;
+        queue_x = board_x + NUMBER_OF_COL * squareWidth + 30 + 15 * squareStrokeWidth;
         queue_y = board_y + 5 * squareHeight;
 
         ourHolder = getHolder();
@@ -93,7 +92,6 @@ public class TetrisView extends SurfaceView implements Runnable {
             board[20][i] = 1;
         }
         gameOver = false;
-        heldPiece = null;
         initialiseQueue();
     }
 
@@ -142,8 +140,9 @@ public class TetrisView extends SurfaceView implements Runnable {
             canvas = Draw.fillSquares(canvas, board, typeBoard); // Used to color the squares appropriately
             drawCurrentTetrimino();
             canvas = drawQueue(canvas); // draw an empty queue
-            drawQueuePieces();
+            drawQueueTetrimino();
             canvas = drawNextPieceHolder(canvas); // draw an empty nextPieceHolder
+            drawNextTetrimino();
             canvas = drawHoldPieceHolder(canvas); // draw an empty pieceHolder
             ourHolder.unlockCanvasAndPost(canvas);
         }
@@ -273,15 +272,23 @@ public class TetrisView extends SurfaceView implements Runnable {
     /**
      * Draw the tetrimino's in the queue except for the next one
      */
-    private void drawQueuePieces() {
+    private void drawQueueTetrimino() {
         int pieceNumber = 0;
         for (int i = nextTetriminos.length - tetriminosInQueue + 1; i < nextTetriminos.length; i++) {
             Tetrimino tetrimino = nextTetriminos[i];
-            int x = queue_x + squareWidth;
-            int y = queue_y + (3 * pieceNumber + 1) * squareHeight;
+            int x = queue_x + 2*squareWidth;
+            int y = queue_y + (3 * pieceNumber + 1) * squareHeight + 30;
             canvas = tetrimino.drawTetrimino(canvas, x, y);
             pieceNumber++;
         }
+    }
+
+    private void drawNextTetrimino() {
+        int center_x = queue_x + 2 * squareWidth - 10 + 5 * squareStrokeWidth;
+        int center_y = queue_y - 3 * squareHeight;
+        Tetrimino next = nextTetriminos[nextTetriminos.length - tetriminosInQueue];
+        canvas = next.drawTetrimino(canvas,center_x,center_y);
+
     }
 
 

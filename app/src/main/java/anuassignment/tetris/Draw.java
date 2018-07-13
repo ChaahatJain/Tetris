@@ -58,7 +58,7 @@ public class Draw {
     public static Canvas drawQueue(Canvas canvas) {
         int startX = queue_x;
         int startY = queue_y;
-        int endX = startX + 4 * (squareWidth + squareStrokeWidth);
+        int endX = startX + 5 * (squareWidth + squareStrokeWidth);
         int endY = startY + 15 * squareHeight;
         fillPaint.setColor(Color.WHITE);
         Rect rect = new Rect(startX, startY, endX, endY);
@@ -74,9 +74,9 @@ public class Draw {
      * @return
      */
     public static Canvas drawNextPieceHolder(Canvas canvas) {
-        int center_x = board_x + (NUMBER_OF_COL + 2) * squareWidth + 20 + 10 * squareStrokeWidth;
-        int center_y = board_y + 2 * squareHeight;
-        int radius = 2 * squareHeight;
+        int center_x = queue_x + 2*squareWidth;
+        int center_y = queue_y - 3*squareHeight;
+        float radius = (float) 2.75 * squareHeight;
         canvas.drawCircle(center_x, center_y, radius, fillPaint);
         canvas.drawCircle(center_x, center_y, radius, strokePaint);
         return canvas;

@@ -164,7 +164,7 @@ public class Tetrimino {
 
             default:
                 rotationPoints = new Tuple[] {new Tuple(0,0), new Tuple(0,0), new Tuple(0,0), new Tuple(0,0), new Tuple(0,0)};
-                squares = new Tuple[] {new Tuple(0,0), new Tuple(1,0), new Tuple(0,1), new Tuple(1,1)};
+                squares = new Tuple[] {new Tuple(0,0), new Tuple(-1,0), new Tuple(0,-1), new Tuple(-1,-1)};
                 break;
         }
 
@@ -246,7 +246,7 @@ public class Tetrimino {
             Paint strokePaint = new Paint();
             strokePaint.setStyle(Paint.Style.STROKE);
             strokePaint.setColor(Color.BLACK);
-            strokePaint.setStrokeWidth(5);
+            strokePaint.setStrokeWidth(20);
             canvas.drawRect(rect,strokePaint);
         }
         return canvas;
