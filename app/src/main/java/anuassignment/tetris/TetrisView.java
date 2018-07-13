@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Rect;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -37,12 +36,13 @@ public class TetrisView extends SurfaceView implements Runnable {
     private long time = 17;
 
     // currentPiece controlled by the player
-    Piece currentPiece;
+
+    Tetrimino currentTetrimino;
+    Tetrimino[] nextTetriminos;
+    int tetriminosInQueue;
     Piece heldPiece;
-    Piece[] queue;
     boolean gameOver;
 
-    int queuePieces;
     // playing Board
     final static int NUMBER_OF_COL = 10;
     final static int NUMBER_OF_ROW = 20;
@@ -71,15 +71,18 @@ public class TetrisView extends SurfaceView implements Runnable {
         ourHolder = getHolder();
         fillPaint = new Paint();
         strokePaint = new Paint();
-        queue = new Piece[6];
-        queuePieces = 6;
+
+        // Get the queue
+        nextTetriminos = new Tetrimino[6];
+        tetriminosInQueue = nextTetriminos.length;
+
         startGame();
     }
 
     // initialise stuff for the game
     private void startGame() {
-        // get a random piece controlled by the player
-        currentPiece = Piece.generatePiece();
+        // get a random tetrimino controlled by the player
+        currentTetrimino = Tetrimino.generateTetrimino();
 
         for (int i = 0; i < 20; i++) {
             board[i] = new int[NUMBER_OF_COL];
@@ -98,10 +101,10 @@ public class TetrisView extends SurfaceView implements Runnable {
      * Used to initialise the queue for the game
      */
     private void initialiseQueue() {
-        for (int i = 0; i < queue.length; i++) {
-            queue[i] = Piece.generatePiece();
+        for (int i = 0; i < nextTetriminos.length; i++) {
+            nextTetriminos[i] = Tetrimino.generateTetrimino();
         }
-        queuePieces = queue.length;
+        tetriminosInQueue = nextTetriminos.length;
     }
 
     @Override
@@ -116,17 +119,17 @@ public class TetrisView extends SurfaceView implements Runnable {
 
     private void update() {
 
-        if (checkPiece()) { // check whether piece is going to be fixed or not
-            updateBoard(); // if yes, update the board
+        if (checkTetrimino()) { // check whether piece is going to be fixed or not
+            updateMatrix(); // if yes, update the board
 
-            int numberOfRowsCleared = clearRows(); // used for scoring
+            int numberOfRowsCleared = clearLines(); // used for scoring
 
-            currentPiece = queue[queue.length - queuePieces]; // Get the next piece out
-            queuePieces--;
+            currentTetrimino = nextTetriminos[nextTetriminos.length - tetriminosInQueue]; // Get the next piece out
+            tetriminosInQueue--;
 
-            if (queuePieces == 0) initialiseQueue();
+            if (tetriminosInQueue == 0) initialiseQueue();
         } else {
-            currentPiece.setPositionY(currentPiece.getPositionY() + 1);
+            currentTetrimino.setCenterRow(currentTetrimino.getCenterRow() + 1);
         }
     }
 
@@ -137,7 +140,7 @@ public class TetrisView extends SurfaceView implements Runnable {
             canvas.drawColor(Color.GRAY);
             canvas = drawMatrix(canvas); // draw an empty matrix
             canvas = Draw.fillSquares(canvas, board, typeBoard); // Used to color the squares appropriately
-            drawCurrentPiece();
+            drawCurrentTetrimino();
             canvas = drawQueue(canvas); // draw an empty queue
             drawQueuePieces();
             canvas = drawNextPieceHolder(canvas); // draw an empty nextPieceHolder
@@ -173,47 +176,44 @@ public class TetrisView extends SurfaceView implements Runnable {
     }
 
     /**
-     * Used to check whether there is a square below the given piece or not
+     * Used to check whether there is a mino below the given tetrimino or not
      *
      * @return
      */
-    private boolean checkPiece() {
-        int indexX = currentPiece.getPositionX();
-        int indexY = currentPiece.getPositionY();
-        Square[] squares = currentPiece.getSquares();
-        for (int i = 0; i < 4; i++) {
-            Square square = squares[i];
-            int x = square.getX() + indexX;
-            int y = square.getY() + indexY;
-            if (board[y + 1][x] == 1) {
-                return true;
-            }
+    private boolean checkTetrimino() {
+        int indexX = currentTetrimino.getCenterCol();
+        int indexY = currentTetrimino.getCenterRow();
+        Tetrimino.Tuple[] squares = currentTetrimino.getSquares();
+        for (Tetrimino.Tuple tuple : squares) {
+            int col = tuple.x + indexX;
+            int row = tuple.y + indexY;
+            if (board[row + 1][col] == 1) return true;
         }
+
         return false;
     }
 
     /**
-     * Update the details of a board when a piece falls on it
+     * Update the details of a matrix when a tetrimino falls on it
      */
-    private void updateBoard() {
-        int indexX = currentPiece.getPositionX();
-        int indexY = currentPiece.getPositionY();
-        Square[] squares = currentPiece.getSquares();
-        for (Square square : squares) {
-            int x = square.getX() + indexX;
-            int y = square.getY() + indexY;
+    private void updateMatrix() {
+        int indexX = currentTetrimino.getCenterCol();
+        int indexY = currentTetrimino.getCenterRow();
+        Tetrimino.Tuple[] squares = currentTetrimino.getSquares();
+        for (Tetrimino.Tuple square : squares) {
+            int x = square.x + indexX;
+            int y = square.y + indexY;
             board[y][x] = 1;
-            typeBoard[y][x] = currentPiece.getType();
+            typeBoard[y][x] = currentTetrimino.getType();
         }
-
     }
 
     /**
-     * Check whether any row has been filled or not. If it has then remove the row
+     * Check whether any line has been filled or not. If it has then remove the line
      *
      * @return the number of rows that have been removed like this
      */
-    private int clearRows() {
+    private int clearLines() {
         int numberRemoved = 0;
         for (int i = 0; i < NUMBER_OF_ROW; i++) {
             if (lineClear(i - numberRemoved)) {
@@ -238,7 +238,7 @@ public class TetrisView extends SurfaceView implements Runnable {
     }
 
     /**
-     * clear a line from both grids
+     * clear a line from both matrices
      *
      * @param y : Row index to be removed
      */
@@ -259,40 +259,29 @@ public class TetrisView extends SurfaceView implements Runnable {
     /**
      * Draw the current piece onto the canvas
      */
-    private void drawCurrentPiece() {
-        Square[] squares = currentPiece.getSquares();
-        int positionX = currentPiece.getPositionX();
-        int positionY = currentPiece.getPositionY();
-        char type = currentPiece.getType();
-        Paint paint = new Paint();
-        paint.setColor(Piece.chooseColor(type));
-        Paint strokePaint = new Paint();
-        strokePaint.setStyle(Paint.Style.STROKE);
-        strokePaint.setColor(Color.BLACK);
-        strokePaint.setStrokeWidth(squareStrokeWidth);
-        for (int i = 0; i < squares.length; i++) {
-            int x = board_x + (positionX + squares[i].getX()) * squareWidth;
-            int y = board_y + (positionY + squares[i].getY()) * squareHeight;
-            int endX = x + squareWidth;
-            int endY = y + squareHeight;
-            Rect rect = new Rect(x, y, endX, endY);
-            canvas.drawRect(rect, paint);
-            canvas.drawRect(rect, strokePaint);
-        }
+    private void drawCurrentTetrimino() {
+        int col = currentTetrimino.getCenterCol();
+        int row = currentTetrimino.getCenterRow();
+
+        int startX = board_x + col * squareWidth;
+        int startY = board_y + row * squareHeight;
+
+        canvas = currentTetrimino.drawTetrimino(canvas, startX, startY);
 
     }
-    int count = 0;
+
+    /**
+     * Draw the tetrimino's in the queue except for the next one
+     */
     private void drawQueuePieces() {
         int pieceNumber = 0;
-        for (int i = queue.length - queuePieces + 1; i < queue.length; i++) {
-            Piece piece = queue[i];
+        for (int i = nextTetriminos.length - tetriminosInQueue + 1; i < nextTetriminos.length; i++) {
+            Tetrimino tetrimino = nextTetriminos[i];
             int x = queue_x + squareWidth;
-            int y = queue_y + (3*pieceNumber + 1) * squareHeight;
-            canvas = piece.drawPiece(canvas, x, y);
+            int y = queue_y + (3 * pieceNumber + 1) * squareHeight;
+            canvas = tetrimino.drawTetrimino(canvas, x, y);
             pieceNumber++;
-            if (count == 0) System.out.println("Piece Number : " + pieceNumber);
         }
-        count++;
     }
 
 

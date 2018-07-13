@@ -118,7 +118,7 @@ public class Draw {
                     int endY = y + squareHeight;
                     Rect rect = new Rect(x, y, endX, endY);
                     char type = typeBoard[i][j];
-                    paint.setColor(Piece.chooseColor(type));
+                    paint.setColor(Tetrimino.chooseColor(type));
                     canvas.drawRect(rect,paint);
                     canvas.drawRect(rect,strokePaint);
                 }
