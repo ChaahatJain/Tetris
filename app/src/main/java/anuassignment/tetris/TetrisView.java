@@ -5,7 +5,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -72,8 +71,8 @@ public class TetrisView extends SurfaceView implements Runnable {
         ourHolder = getHolder();
         fillPaint = new Paint();
         strokePaint = new Paint();
-        queue = new Piece[7];
-        queuePieces = 7;
+        queue = new Piece[6];
+        queuePieces = 6;
         startGame();
     }
 
@@ -140,7 +139,7 @@ public class TetrisView extends SurfaceView implements Runnable {
             canvas = Draw.fillSquares(canvas, board, typeBoard); // Used to color the squares appropriately
             drawCurrentPiece();
             canvas = drawQueue(canvas); // draw an empty queue
-            drawQueuePieces(queue);
+            drawQueuePieces();
             canvas = drawNextPieceHolder(canvas); // draw an empty nextPieceHolder
             canvas = drawHoldPieceHolder(canvas); // draw an empty pieceHolder
             ourHolder.unlockCanvasAndPost(canvas);
@@ -282,16 +281,18 @@ public class TetrisView extends SurfaceView implements Runnable {
         }
 
     }
-
-    private void drawQueuePieces(Piece[] queue) {
+    int count = 0;
+    private void drawQueuePieces() {
         int pieceNumber = 0;
         for (int i = queue.length - queuePieces + 1; i < queue.length; i++) {
             Piece piece = queue[i];
             int x = queue_x + squareWidth;
-            int y = queue_y + (pieceNumber + 4) * squareHeight;
+            int y = queue_y + (3*pieceNumber + 1) * squareHeight;
             canvas = piece.drawPiece(canvas, x, y);
             pieceNumber++;
+            if (count == 0) System.out.println("Piece Number : " + pieceNumber);
         }
+        count++;
     }
 
 
