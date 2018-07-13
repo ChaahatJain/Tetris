@@ -74,7 +74,7 @@ public class Draw {
      * @return
      */
     public static Canvas drawNextPieceHolder(Canvas canvas) {
-        int center_x = queue_x + 2*squareWidth;
+        int center_x = queue_x + 2*squareWidth + 30;
         int center_y = queue_y - 3*squareHeight;
         float radius = (float) 2.75 * squareHeight;
         canvas.drawCircle(center_x, center_y, radius, fillPaint);
@@ -88,9 +88,9 @@ public class Draw {
      * @return
      */
     public static Canvas drawHoldPieceHolder(Canvas canvas) {
-        int center_x = board_x - 20 - 2 * squareWidth - 10 * squareStrokeWidth;
+        int center_x = board_x - 20 - 2 * squareWidth - 10 * squareStrokeWidth - 30;
         int center_y = board_y + 2 * squareHeight;
-        int radius = 2 * squareHeight;
+        float radius = (float) 2.75 * squareHeight;
         canvas.drawCircle(center_x, center_y, radius, fillPaint);
         canvas.drawCircle(center_x, center_y, radius, strokePaint);
         return canvas;

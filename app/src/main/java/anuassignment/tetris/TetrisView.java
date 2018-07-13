@@ -9,10 +9,6 @@ import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import static anuassignment.tetris.Draw.drawHoldPieceHolder;
 import static anuassignment.tetris.Draw.drawMatrix;
 import static anuassignment.tetris.Draw.drawNextPieceHolder;
@@ -44,6 +40,8 @@ public class TetrisView extends SurfaceView implements Runnable {
     // currentPiece controlled by the player
 
     Tetrimino currentTetrimino;
+    Tetrimino heldTetrimino;
+    Tetrimino nextTetrimino;
     Tetrimino[] nextTetriminos;
     int tetriminosInQueue;
     boolean gameOver;
@@ -98,6 +96,7 @@ public class TetrisView extends SurfaceView implements Runnable {
             board[20][i] = 1;
         }
         gameOver = false;
+        heldTetrimino = null;
         initialiseQueue();
     }
 
@@ -109,6 +108,7 @@ public class TetrisView extends SurfaceView implements Runnable {
             nextTetriminos[i] = Tetrimino.generateTetrimino();
         }
         tetriminosInQueue = nextTetriminos.length;
+        nextTetrimino = nextTetriminos[nextTetriminos.length - tetriminosInQueue];
     }
 
     @Override
@@ -128,8 +128,9 @@ public class TetrisView extends SurfaceView implements Runnable {
 
             int numberOfRowsCleared = clearLines(); // used for scoring
 
-            currentTetrimino = nextTetriminos[nextTetriminos.length - tetriminosInQueue]; // Get the next piece out
+            currentTetrimino = nextTetrimino;
             tetriminosInQueue--;
+            nextTetrimino = nextTetriminos[nextTetriminos.length - tetriminosInQueue];
 
             if (tetriminosInQueue == 0) initialiseQueue();
         } else {
@@ -149,8 +150,9 @@ public class TetrisView extends SurfaceView implements Runnable {
             drawQueueTetrimino();
             canvas = drawNextPieceHolder(canvas); // draw an empty nextPieceHolder
             drawNextTetrimino();
-            drawGhostPiece();
+            drawGhostTetrimino();
             canvas = drawHoldPieceHolder(canvas); // draw an empty pieceHolder
+            drawHeldTetrimino();
             ourHolder.unlockCanvasAndPost(canvas);
         }
 
@@ -302,9 +304,9 @@ public class TetrisView extends SurfaceView implements Runnable {
     }
 
     /**
-     * Draws the ghost piece onto the canvas
+     * Draws the ghost tetrimino onto the canvas
      */
-    private void drawGhostPiece() {
+    private void drawGhostTetrimino() {
         Tetrimino.Tuple[] tuples = currentTetrimino.getSquares();
         int col = currentTetrimino.getCenterCol();
         int row = currentTetrimino.getCenterRow();
@@ -338,6 +340,15 @@ public class TetrisView extends SurfaceView implements Runnable {
             canvas.drawRect(rect, paint);
         }
 
+    }
+
+    private void drawHeldTetrimino() {
+        if (heldTetrimino == null) {}
+        else {
+            int center_x = board_x - 20 - 3 * squareWidth - 10 * squareStrokeWidth - 30;
+            int center_y = board_y + 2 * squareHeight - 20;
+            canvas = heldTetrimino.drawTetrimino(canvas, center_x, center_y);
+        }
     }
 
     /**
