@@ -5,6 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -289,6 +290,9 @@ public class TetrisView extends SurfaceView implements Runnable {
         }
     }
 
+    /**
+     * Draw the next tetrimino in the circle
+     */
     private void drawNextTetrimino() {
         int center_x = queue_x + 2 * squareWidth - 10 + 5 * squareStrokeWidth;
         int center_y = queue_y - 3 * squareHeight;
@@ -297,6 +301,9 @@ public class TetrisView extends SurfaceView implements Runnable {
 
     }
 
+    /**
+     * Draws the ghost piece onto the canvas
+     */
     private void drawGhostPiece() {
         Tetrimino.Tuple[] tuples = currentTetrimino.getSquares();
         int col = currentTetrimino.getCenterCol();
@@ -327,16 +334,18 @@ public class TetrisView extends SurfaceView implements Runnable {
             int top = board_y + y * squareHeight;
             int right = left + squareWidth;
             int bottom = top + squareHeight;
-            Rect rect = new Rect(left,top,right,bottom);
-
-            canvas.drawRect(rect,paint);
-
-
+            Rect rect = new Rect(left, top, right, bottom);
+            canvas.drawRect(rect, paint);
         }
-
 
     }
 
+    /**
+     * Get the lowest empty square where a mino at (col,row) can fall
+     * @param col
+     * @param row
+     * @return
+     */
     private int getLowestAvailableRow(int col, int row) {
         int max = 0;
         for (int i = row + 1; i <= NUMBER_OF_ROW; i++) {
@@ -347,5 +356,17 @@ public class TetrisView extends SurfaceView implements Runnable {
         return max;
     }
 
-
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        float x = event.getX();
+        if (event.getAction() == MotionEvent.ACTION_DOWN) {
+            if (x > board_x && x < board_x + 5 * squareWidth) {
+                currentTetrimino = currentTetrimino.rotateTetrimino(true);
+            }
+            if (x > board_x + 5 * squareWidth && x < board_x + 10 * squareWidth) {
+                currentTetrimino = currentTetrimino.rotateTetrimino(false);
+            }
+        }
+        return true;
+    }
 }

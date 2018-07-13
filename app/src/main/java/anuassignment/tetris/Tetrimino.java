@@ -174,17 +174,16 @@ public class Tetrimino {
     /**
      * Rotate the tetrimino
      *
-     * @param tetrimino
      * @param clockwise
      * @return
      */
-    Tetrimino rotateTetrimino(Tetrimino tetrimino, boolean clockwise) {
+    Tetrimino rotateTetrimino(boolean clockwise) {
         // get the next piece
         // increase positionX by rotationPoint number
         int centerX = centerCol + rotationPoints[0].x;
         int centerY = centerRow + rotationPoints[0].y;
-        char type = tetrimino.type;
-        char orientation = clockwise ? ORIENTATIONS.charAt((ORIENTATIONS.indexOf(tetrimino.orientation) + 1) % 4) : ORIENTATIONS.charAt((ORIENTATIONS.indexOf(tetrimino.orientation) + 3) % 4);
+        char type = this.type;
+        char orientation = clockwise ? ORIENTATIONS.charAt((ORIENTATIONS.indexOf(this.orientation) + 1) % 4) : ORIENTATIONS.charAt((ORIENTATIONS.indexOf(this.orientation) + 3) % 4);
         return new Tetrimino(centerX, centerY, type, orientation);
     }
 
